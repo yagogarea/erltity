@@ -28,14 +28,24 @@
 
 -type db_driver() :: epgsql.
 
--type schemas_path() :: binary.
+-type schemas_path() :: binary().
+
+-type cursor() :: binary() | undefined.
+
+-type find_opts() :: #{
+    page => non_neg_integer(),
+    page_size => non_neg_integer(),
+    offset => non_neg_integer()
+}.
 
 %%% EXPORT TYPES
 -export_type([
     opts/0,
     db_driver/0,
     schemas_path/0,
-    register_opts/0
+    register_opts/0,
+    find_opts/0,
+    cursor/0
 ]).
 
 %%%-----------------------------------------------------------------------------
