@@ -1,4 +1,7 @@
 # Erltity
+![erltity status](https://github.com/yagogarea/erltity/actions/workflows/ci.yml/badge.svg)
+![Docs Status](https://github.com/yagogarea/erltity/workflows/Docs/badge.svg)
+
 Erltity is an Erlang library that simplifies database interaction by generating Erlang code from entity definitions. It provides a set of functions to easily communicate with your database.
 
 Erltity parses your entity definitions and generates Erlang code that allows you to interact with your database.
