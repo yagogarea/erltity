@@ -145,23 +145,25 @@ find(TableName, ID) ->
 -spec find(TableName, Filters, Opts) -> Result when
     TableName :: atom(),
     Filters :: map(),
-    Opts :: map(),
-    Result  :: {ok, [map()]} | {error, Reason},
+    Opts :: erltity:find_opts(),
+    Result  :: {ok, {[map()], erltity:cursor()}} | {error, Reason},
     Reason :: term().
-find(TableName, Filters, _Opts) ->
+find(TableName, Filters, Opts) ->
     Connection = persistent_term:get(epgsql_connection),
-    Query = filters_to_query(maps:to_list(Filters), "' AND ", ?FIND(TableName) ++ " WHERE "),
+    PageSize = maps:get(page_size, Opts, 100),
+    Page = maps:get(page, Opts, <<"0">>),
+    Offset = maps:get(offset, Opts, 0),
+    Query = build_find_query(TableName, maps:to_list(Filters), Page, PageSize, Offset),
     case epgsql:equery(Connection, Query) of
         {ok, _Columns, []} ->
             {error, not_found};
         {ok, Columns, ResultList} ->
-            {ok, lists:map(fun(Result) -> serialize_entity(Columns, Result) end, ResultList)}
+            {ok, serialize_pagination(Columns, ResultList)}
     end.
 
 %%%-----------------------------------------------------------------------------
 %%% INTERNAL FUNCTIONS
 %%%-----------------------------------------------------------------------------
-
 serialize_entity(Columns, Values) ->
     serialize_entity(Columns, tuple_to_list(Values), #{}).
 
@@ -192,6 +194,31 @@ serialize_entity([{
     _TableAttrNumber
     } | T1], [Value | T2], Acc) ->
     serialize_entity(T1, T2, maps:put(Name, Value, Acc)).
+
+
+serialize_pagination(Columns, ResultList) ->
+    {EntityList, Last} = lists:mapfoldl(
+        fun(Result, _Acc) ->
+            Entity = serialize_entity(Columns, Result),
+            {Entity, Entity}
+        end, 
+        0, 
+        ResultList
+    ),
+    {EntityList, integer_to_binary(maps:get(<<"id">>, Last))}.
+
+
+build_find_query(TableName, [], Page, PageSize, Offset) ->
+    "SELECT * FROM " ++ atom_to_list(TableName) ++
+    " WHERE id > " ++ binary_to_list(Page) ++
+    " LIMIT " ++ integer_to_list(PageSize) ++
+    " OFFSET " ++ integer_to_list(Offset);
+build_find_query(TableName, Filters, Page, PageSize, Offset) ->
+    "SELECT * FROM " ++ atom_to_list(TableName) ++
+    " WHERE " ++ filters_to_query(Filters, " AND ", "") ++
+    " AND id > " ++ binary_to_list(Page) ++
+    " LIMIT " ++ integer_to_list(PageSize) ++
+    " OFFSET " ++ integer_to_list(Offset).
 
 parse_keys(Map) ->
     parse_keys(maps:to_list(Map), {"", []}).
