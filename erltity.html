@@ -12,7 +12,7 @@
 
     <link rel="stylesheet" href="dist/html-erlang-DQDXQC7W.css" />
 
-    <script defer src="dist/sidebar_items-A638D726.js"></script>
+    <script defer src="dist/sidebar_items-2E0846AF.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-DPJLHKSM.js"></script>
 
@@ -104,7 +104,23 @@ erltity
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#t:cursor/0" data-no-tooltip="" translate="no">cursor/0</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#t:db_driver/0" data-no-tooltip="" translate="no">db_driver/0</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#t:find_opts/0" data-no-tooltip="" translate="no">find_opts/0</a>
 
       </div>
 
@@ -191,6 +207,34 @@ erltity
       <span class="text">Types</span>
     </h1>
     <div class="types-list">
+<section class="detail" id="t:cursor/0">
+
+  <div class="detail-header">
+    <a href="#t:cursor/0" class="detail-link" data-no-tooltip="" aria-label="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">cursor/0</h1>
+
+
+        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L33" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-type</span> cursor() :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:binary/0">binary</a>() | undefined.</pre>
+
+      </div>
+
+
+  </section>
+</section>
 <section class="detail" id="t:db_driver/0">
 
   <div class="detail-header">
@@ -213,6 +257,35 @@ erltity
       <div class="specs">
 
           <pre translate="no"><span class="attribute">-type</span> db_driver() :: epgsql.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="t:find_opts/0">
+
+  <div class="detail-header">
+    <a href="#t:find_opts/0" class="detail-link" data-no-tooltip="" aria-label="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">find_opts/0</h1>
+
+
+        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L35" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-type</span> find_opts() ::
+          #{page => <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:non_neg_integer/0">non_neg_integer</a>(), page_size => <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:non_neg_integer/0">non_neg_integer</a>(), offset => <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:non_neg_integer/0">non_neg_integer</a>()}.</pre>
 
       </div>
 
@@ -324,7 +397,7 @@ erltity
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">-type</span> schemas_path() :: binary.</pre>
+          <pre translate="no"><span class="attribute">-type</span> schemas_path() :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:binary/0">binary</a>().</pre>
 
       </div>
 
@@ -353,7 +426,7 @@ erltity
       <h1 class="signature" translate="no">register(SchemaPath, Opts)</h1>
 
 
-        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L68" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L78" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -386,7 +459,7 @@ Registers a schema from the given path and generates the new Erlang module.
       <h1 class="signature" translate="no">start_link(DbDriver, Opts)</h1>
 
 
-        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L49" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L59" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -415,7 +488,7 @@ Starts the erltity application connecting to the database using the given driver
       <h1 class="signature" translate="no">stop(StopArg)</h1>
 
 
-        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L56" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L66" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
