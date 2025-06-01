@@ -145,7 +145,7 @@ find(TableName, ID) ->
 -spec find(TableName, Filters, Opts) -> Result when
     TableName :: atom(),
     Filters :: map(),
-    Opts :: erltity:search_opts(),
+    Opts :: erltity:find_opts(),
     Result  :: {ok, {[map()], erltity:cursor()}} | {error, Reason},
     Reason :: term().
 find(TableName, Filters, Opts) ->
