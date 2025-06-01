@@ -40,6 +40,26 @@ Currently, `erltity` supports:
 ```
 For practical examples, check out the examples directory.
 
+### Register Function and Module Generation
+
+The `register` function generates a module named after the entity definition with functions to interact with the database. This module is loaded into the system for immediate use.
+
+Optionally, the module can be saved to disk with the `#{save_module => Path}` option.
+
+When using a SQL database, if the target table does not exist at command execution, Erltity attempts to create it by inferring the table structure from the entity definition types.
+
+Saving the generated table creation command to a file is possible with the `#{save_create_table => Path}` option.
+
+The generated module includes the following functions for interacting with the database:
+
+| Function   | Description                                          |
+|------------|------------------------------------------------------|
+| `create/1` | Inserts a new record into the database               |
+| `update/2` | Updates an existing record identified by its ID     |
+| `delete/1` | Deletes a record identified by its ID                |
+| `find/1`   | Retrieves a single record by its ID                   |
+| `find/2`   | Retrieves records filtered according to specified fields |
+
 ## License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
