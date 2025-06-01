@@ -1,0 +1,7 @@
+{application, erltity_json_schema_parser, [
+    {description, "An OTP application"},
+    {vsn, "0.0.1"},
+    {registered, []},
+    {applications, [kernel, stdlib, njson]},
+    {env, []}
+]}.

@@ -1,0 +1,7 @@
+{application, erltity_epgsql, [
+    {description, "An OTP application"},
+    {vsn, "0.0.1"},
+    {registered, []},
+    {applications, [kernel, stdlib, public_key, ssl, epgsql]},
+    {env, []}
+]}.

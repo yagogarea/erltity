@@ -1,0 +1,6 @@
+_build/
+_checkouts/
+_gen/
+*.dump
+*.crashdump
+doc/

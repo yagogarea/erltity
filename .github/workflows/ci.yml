@@ -1,0 +1,45 @@
+name: erltity ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  OTP-VERSION: 26
+  REBAR3-VERSION: 3.23.0
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{ env.OTP-VERSION }}
+          rebar3-version: ${{ env.REBAR3-VERSION }}
+
+      - uses: actions/cache@v3
+        id: rebar3-cache
+        with:
+          path: |
+            ~/.cache/rebar3
+            _build
+          key: ${{ runner.os }}-${{ env.OTP-VERSION }}-${{ env.REBAR3-VERSION }}-${{ hashFiles('rebar.lock') }}
+
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+          
+      - run: make check
+
+      - run: make test
+
+      - uses: test-summary/action@v2
+        if: always()
+        with:
+          paths: '_build/test/logs/**/report.xml'

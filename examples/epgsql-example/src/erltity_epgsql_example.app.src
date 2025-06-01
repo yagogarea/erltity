@@ -1,0 +1,12 @@
+{application, erltity_epgsql_example, [
+    {description, "An OTP application"},
+    {vsn, "0.0.1"},
+    {registered, []},
+    {applications, [kernel, stdlib]},
+    {env, [
+        {host, "localhost"},
+        {username, "postgres"}, 
+        {password, "postgres"},
+        {database, "epgsql_example"}
+    ]}
+]}.
