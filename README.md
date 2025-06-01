@@ -8,12 +8,13 @@ Erltity parses your entity definitions and generates Erlang code that allows you
 
 ## Setup
 
-Add `erltity` and the database driver that you want to use as dependencies in your `rebar.config` file. For example, to use PostgreSQL with the `epgsql` driver, your `rebar.config` should look like this:
+Add `erltity`, the database driver and the parser that you want to use as dependencies in your `rebar.config` file. For example, to use PostgreSQL with the `epgsql` driver, using the JSON Schema parser, your `rebar.config` should look like this:
 
 ```erlang
 {deps, [
   {erltity, {git_subdir, "https://github.com/yagogarea/erltity.git", {branch, "main"}, "apps/erltity"}},
-  {erltity_epgsql, {git_subdir, "https://github.com/yagogarea/erltity.git", {branch, "main"}, "apps/erltity_epgsql"}}
+  {erltity_epgsql, {git_subdir, "https://github.com/yagogarea/erltity.git", {branch, "main"}, "apps/erltity_epgsql"}},
+  {erltity_json_schema_parser, {git_subdir, "https://github.com/yagogarea/erltity.git", {branch, "main"}, "apps/erltity_json_schema_parser"}}
 ]}.
 ```
 
