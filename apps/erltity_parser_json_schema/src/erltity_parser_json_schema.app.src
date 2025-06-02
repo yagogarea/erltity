@@ -1,4 +1,4 @@
-{application, erltity_json_schema_parser, [
+{application, erltity_parser_json_schema, [
     {description, "An OTP application"},
     {vsn, "0.0.1"},
     {registered, []},

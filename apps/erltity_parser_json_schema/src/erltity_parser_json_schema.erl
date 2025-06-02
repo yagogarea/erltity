@@ -1,4 +1,4 @@
--module(erltity_json_schema_parser).
+-module(erltity_parser_json_schema).
 
 %%% EXTERNAL EXPORTS
 -export([
@@ -26,4 +26,4 @@ parse_from_file(Path) ->
 %%% INTERNAL FUNCTIONS
 %%%-----------------------------------------------------------------------------
 parser(<<"http://json-schema.org/draft-07/schema#">>) ->
-    erltity_json_schema_parser_draft_07.
+    erltity_parser_json_schema_draft_07.

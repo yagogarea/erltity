@@ -1,4 +1,4 @@
--module(erltity_json_schema_parser_draft_07).
+-module(erltity_parser_json_schema_draft_07).
 
 %%% EXTERNAL EXPORTS
 -export([

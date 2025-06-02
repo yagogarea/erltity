@@ -14,7 +14,7 @@ Add `erltity`, the database driver and the parser that you want to use as depend
 {deps, [
   {erltity, {git_subdir, "https://github.com/yagogarea/erltity.git", {branch, "main"}, "apps/erltity"}},
   {erltity_epgsql, {git_subdir, "https://github.com/yagogarea/erltity.git", {branch, "main"}, "apps/erltity_epgsql"}},
-  {erltity_json_schema_parser, {git_subdir, "https://github.com/yagogarea/erltity.git", {branch, "main"}, "apps/erltity_json_schema_parser"}}
+  {erltity_parser_json_schema, {git_subdir, "https://github.com/yagogarea/erltity.git", {branch, "main"}, "apps/erltity_parser_json_schema"}}
 ]}.
 ```
 
