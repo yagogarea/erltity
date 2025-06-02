@@ -12,11 +12,11 @@ parse(SchemaPath) ->
     BaseName = filename:basename(binary_to_list(SchemaPath)),
     case string:tokens(BaseName, ".") of
         [SchemaName, "json"] ->
-            {list_to_atom(SchemaName), erltity_json_schema_parser:parse_from_file(SchemaPath)};
+            {list_to_atom(SchemaName), erltity_parser_json_schema:parse_from_file(SchemaPath)};
         [SchemaName | Rest ] ->
             case lists:last(Rest) of
                 "json" ->
-                    {list_to_atom(SchemaName), erltity_json_schema_parser:parse_from_file(SchemaPath)};
+                    {list_to_atom(SchemaName), erltity_parser_json_schema:parse_from_file(SchemaPath)};
                 _ ->
                     {error, unsupported_file_type}
             end;
