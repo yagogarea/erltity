@@ -23,12 +23,17 @@ generate(DbDriverModule, SchemaName) ->
             )
         ]
     ),
+    CallbackAttr = erl_syntax:attribute(
+        erl_syntax:atom(behaviour), [
+        erl_syntax:atom(erltity)
+        ]
+    ),
     CreateAttr = attribute(DbDriverModule, SchemaName, create, 'CreateRequest'),
     UpdateAttr = attribute(DbDriverModule, SchemaName, update, 'ID', 'UpdateRequest'),
     DeleteAttr = attribute(DbDriverModule, SchemaName, delete, 'ID'),
     FindAttr = attribute(DbDriverModule, SchemaName, find, 'ID'),
     MultiFindAttr =  attribute(DbDriverModule, SchemaName, find, 'Filters', 'Opts'),
-    Attrs = [ModAttr, ExportAttr, CreateAttr, UpdateAttr, DeleteAttr, FindAttr, MultiFindAttr],
+    Attrs = [ModAttr, CallbackAttr, ExportAttr, CreateAttr, UpdateAttr, DeleteAttr, FindAttr, MultiFindAttr],
     [erl_syntax:revert(AST) || AST <- Attrs].
 
 
