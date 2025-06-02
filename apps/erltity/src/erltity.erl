@@ -8,7 +8,12 @@
 
 %%% EXTERNAL EXPORTS
 -export([
-    register/2
+    register/2,
+    create/2,
+    update/3,
+    delete/2,
+    find/2,
+    find/3
 ]).
 
 %%% TYPES
@@ -47,6 +52,40 @@
     find_opts/0,
     cursor/0
 ]).
+
+%%%-----------------------------------------------------------------------------
+%%% CALLBACKS
+%%%-----------------------------------------------------------------------------
+-callback create(CreateRequest) -> Result when
+    CreateRequest :: map(),
+    Result :: {ok, Entity} | {error, Reason},
+    Entity :: map(),
+    Reason :: term().
+
+-callback update(Id, UpdateRequest) -> Result when
+    UpdateRequest :: map(),
+    Id :: term(),
+    Result :: {ok, Entity} | {error, Reason},
+    Entity :: map(),
+    Reason :: term().
+
+-callback delete(Id) -> Result when
+    Id :: term(),
+    Result :: ok | {error, Reason},
+    Reason :: term().
+
+-callback find(Id) -> Result when
+    Id :: term(),
+    Result :: {ok, Entity} | {error, Reason},
+    Entity :: map(),
+    Reason :: term().
+
+-callback find(Filters, Opts) -> Result when
+    Filters :: map(),
+    Opts :: find_opts(),
+    Result :: {ok, [Entity]} | {error, Reason},
+    Entity :: map(),
+    Reason :: term().
 
 %%%-----------------------------------------------------------------------------
 %%% START/STOP EXPORTS
@@ -88,6 +127,58 @@ register(SchemaPath, Opts) ->
             {ok, File} = file:open(binary_to_list(Path) ++ atom_to_list(SchemaName) ++ ".erl", [write]),
             io:format(File, "~s", [erl_prettypr:format(erl_syntax:form_list(Forms))])
     end.
+
+-spec create(EntityName, CreateRequest) -> Result when
+    EntityName :: atom(),
+    CreateRequest :: map(),
+    Result :: {ok, Entity} | {error, Reason},
+    Entity :: map(),
+    Reason :: term().
+%% @doc Saves a new entity of type `EntityName` with the given `CreateRequest`.
+create(EntityName, CreateRequest) ->
+    EntityName:create(CreateRequest).
+
+-spec update(EntityName, Id, UpdateRequest) -> Result when
+    EntityName :: atom(),
+    UpdateRequest :: map(),
+    Id :: term(),
+    Result :: {ok, Entity} | {error, Reason},
+    Entity :: map(),
+    Reason :: term().
+%% @doc Updates an existing entity of type `EntityName` with the given `Id` and `UpdateRequest`.
+update(EntityName, Id, UpdateRequest) ->
+    EntityName:update(Id, UpdateRequest).
+
+-spec delete(EntityName, Id) -> Result when
+    EntityName :: atom(),
+    Id :: term(),
+    Result :: ok | {error, Reason},
+    Reason :: term().
+%% @doc Deletes an existing entity of type `EntityName` with the given `Id`.
+delete(EntityName, Id) ->
+    EntityName:delete(Id).
+
+-spec find(EntityName, Id) -> Result when
+    EntityName :: atom(),
+    Id :: term(),
+    Result :: {ok, Entity} | {error, Reason},
+    Entity :: map(),
+    Reason :: term().
+%% @doc Finds an entity of type `EntityName` with the given `Id`.
+find(EntityName, Id) ->
+    EntityName:find(Id).
+
+-spec find(EntityName, Filters, Opts) -> Result when
+    EntityName :: atom(),
+    Filters :: map(),
+    Opts :: find_opts(),
+    Result :: {ok, [Entity]} | {error, Reason},
+    Entity :: map(),
+    Reason :: term().
+%% @doc Finds entities of type `EntityName` that match the given `Filters` and `Opts`,
+%% `Opts` can include pagination options like `page`, `page_size`, and `offset`.
+find(EntityName, Filters, Opts) ->
+    EntityName:find(Filters, Opts).
 
 %%%-----------------------------------------------------------------------------
 %%% INTERNAL FUNCTIONS
