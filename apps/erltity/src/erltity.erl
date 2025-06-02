@@ -134,7 +134,7 @@ register(SchemaPath, Opts) ->
     Result :: {ok, Entity} | {error, Reason},
     Entity :: map(),
     Reason :: term().
-%% @doc Saves a new entity of type `EntityName` with the given `CreateRequest`.
+%% @doc Saves a new entity of type EntityName with the given CreateRequest.
 create(EntityName, CreateRequest) ->
     EntityName:create(CreateRequest).
 
@@ -145,7 +145,7 @@ create(EntityName, CreateRequest) ->
     Result :: {ok, Entity} | {error, Reason},
     Entity :: map(),
     Reason :: term().
-%% @doc Updates an existing entity of type `EntityName` with the given `Id` and `UpdateRequest`.
+%% @doc Updates an existing entity of type EntityName with the given Id and UpdateRequest.
 update(EntityName, Id, UpdateRequest) ->
     EntityName:update(Id, UpdateRequest).
 
@@ -154,7 +154,7 @@ update(EntityName, Id, UpdateRequest) ->
     Id :: term(),
     Result :: ok | {error, Reason},
     Reason :: term().
-%% @doc Deletes an existing entity of type `EntityName` with the given `Id`.
+%% @doc Deletes an existing entity of type EntityName with the given Id.
 delete(EntityName, Id) ->
     EntityName:delete(Id).
 
@@ -164,7 +164,7 @@ delete(EntityName, Id) ->
     Result :: {ok, Entity} | {error, Reason},
     Entity :: map(),
     Reason :: term().
-%% @doc Finds an entity of type `EntityName` with the given `Id`.
+%% @doc Finds an entity of type EntityName with the given Id.
 find(EntityName, Id) ->
     EntityName:find(Id).
 
@@ -175,8 +175,8 @@ find(EntityName, Id) ->
     Result :: {ok, [Entity]} | {error, Reason},
     Entity :: map(),
     Reason :: term().
-%% @doc Finds entities of type `EntityName` that match the given `Filters` and `Opts`,
-%% `Opts` can include pagination options like `page`, `page_size`, and `offset`.
+%% @doc Finds entities of type EntityName that match the given Filters and Opts,
+%% Opts can include pagination options like page, page_size, and offset.
 find(EntityName, Filters, Opts) ->
     EntityName:find(Filters, Opts).
 
