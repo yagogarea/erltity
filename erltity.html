@@ -12,7 +12,7 @@
 
     <link rel="stylesheet" href="dist/html-erlang-DQDXQC7W.css" />
 
-    <script defer src="dist/sidebar_items-2E0846AF.js"></script>
+    <script defer src="dist/sidebar_items-2EA78895.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-DPJLHKSM.js"></script>
 
@@ -47,7 +47,7 @@ erltity
 
 <output role="status" id="toast"></output>
 
-<main class="content page-module" id="main" data-type="modules">
+<main class="content page-behaviour" id="main" data-type="modules">
   <div id="content" class="content-inner">
     <div class="top-search">
       <div class="search-settings">
@@ -75,7 +75,7 @@ erltity
 <div id="top-content">
   <div class="heading-with-actions top-heading">
     <h1>
-      <span translate="no">erltity</span> 
+      <span translate="no">erltity</span> <small>behaviour</small>
       <small class="app-vsn" translate="no">(erltity v0.0.1)</small>
 
     </h1>
@@ -159,10 +159,96 @@ erltity
     </div>
 
 </div>
+<div class="summary-callbacks summary">
+  <h2>
+    <a href="#callbacks">Callbacks</a>
+  </h2>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#c:create/1" data-no-tooltip="" translate="no">create/1</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#c:delete/1" data-no-tooltip="" translate="no">delete/1</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#c:find/1" data-no-tooltip="" translate="no">find/1</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#c:find/2" data-no-tooltip="" translate="no">find/2</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#c:update/2" data-no-tooltip="" translate="no">update/2</a>
+
+      </div>
+
+    </div>
+
+</div>
 <div class="summary-functions summary">
   <h2>
     <a href="#functions">Functions</a>
   </h2>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#create/2" data-no-tooltip="" translate="no">create(EntityName, CreateRequest)</a>
+
+      </div>
+
+        <div class="summary-synopsis"></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#delete/2" data-no-tooltip="" translate="no">delete(EntityName, Id)</a>
+
+      </div>
+
+        <div class="summary-synopsis"></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#find/2" data-no-tooltip="" translate="no">find(EntityName, Id)</a>
+
+      </div>
+
+        <div class="summary-synopsis"></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#find/3" data-no-tooltip="" translate="no">find(EntityName, Filters, Opts)</a>
+
+      </div>
+
+        <div class="summary-synopsis"></div>
+
+    </div>
 
     <div class="summary-row">
       <div class="summary-signature">
@@ -194,6 +280,16 @@ erltity
 
     </div>
 
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#update/3" data-no-tooltip="" translate="no">update(EntityName, Id, UpdateRequest)</a>
+
+      </div>
+
+        <div class="summary-synopsis"></div>
+
+    </div>
+
 </div>
 
   </section>
@@ -217,7 +313,7 @@ erltity
       <h1 class="signature" translate="no">cursor/0</h1>
 
 
-        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L33" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L38" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -245,7 +341,7 @@ erltity
       <h1 class="signature" translate="no">db_driver/0</h1>
 
 
-        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L29" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L34" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -273,7 +369,7 @@ erltity
       <h1 class="signature" translate="no">find_opts/0</h1>
 
 
-        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L35" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L40" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -302,7 +398,7 @@ erltity
       <h1 class="signature" translate="no">opts/0</h1>
 
 
-        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L15" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L20" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -330,7 +426,7 @@ erltity
       <h1 class="signature" translate="no">path/0</h1>
 
 
-        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L27" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L32" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -358,7 +454,7 @@ erltity
       <h1 class="signature" translate="no">register_opts/0</h1>
 
 
-        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L22" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L27" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -386,7 +482,7 @@ erltity
       <h1 class="signature" translate="no">schemas_path/0</h1>
 
 
-        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L31" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L36" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -408,6 +504,180 @@ erltity
     </div>
   </section>
 
+  <section id="callbacks" class="details-list">
+    <h1 class="section-heading">
+      <a class="hover-link" href="#callbacks">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Callbacks</span>
+    </h1>
+    <div class="callbacks-list">
+<section class="detail" id="c:create/1">
+
+  <div class="detail-header">
+    <a href="#c:create/1" class="detail-link" data-no-tooltip="" aria-label="Link to this callback">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">create/1</h1>
+
+
+        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L59" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-callback</span> create(CreateRequest) -> Result
+                    when
+                        CreateRequest :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:map/0">map</a>(),
+                        Result :: {ok, Entity} | {error, Reason},
+                        Entity :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:map/0">map</a>(),
+                        Reason :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:term/0">term</a>().</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="c:delete/1">
+
+  <div class="detail-header">
+    <a href="#c:delete/1" class="detail-link" data-no-tooltip="" aria-label="Link to this callback">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">delete/1</h1>
+
+
+        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L72" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-callback</span> delete(Id) -> Result when Id :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:term/0">term</a>(), Result :: ok | {error, Reason}, Reason :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:term/0">term</a>().</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="c:find/1">
+
+  <div class="detail-header">
+    <a href="#c:find/1" class="detail-link" data-no-tooltip="" aria-label="Link to this callback">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">find/1</h1>
+
+
+        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L77" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-callback</span> find(Id) -> Result
+                  when
+                      Id :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:term/0">term</a>(),
+                      Result :: {ok, Entity} | {error, Reason},
+                      Entity :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:map/0">map</a>(),
+                      Reason :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:term/0">term</a>().</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="c:find/2">
+
+  <div class="detail-header">
+    <a href="#c:find/2" class="detail-link" data-no-tooltip="" aria-label="Link to this callback">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">find/2</h1>
+
+
+        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L83" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-callback</span> find(Filters, Opts) -> Result
+                  when
+                      Filters :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:map/0">map</a>(),
+                      Opts :: <a href="#t:find_opts/0">find_opts</a>(),
+                      Result :: {ok, [Entity]} | {error, Reason},
+                      Entity :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:map/0">map</a>(),
+                      Reason :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:term/0">term</a>().</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="c:update/2">
+
+  <div class="detail-header">
+    <a href="#c:update/2" class="detail-link" data-no-tooltip="" aria-label="Link to this callback">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">update/2</h1>
+
+
+        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L65" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-callback</span> update(Id, UpdateRequest) -> Result
+                    when
+                        UpdateRequest :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:map/0">map</a>(),
+                        Id :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:term/0">term</a>(),
+                        Result :: {ok, Entity} | {error, Reason},
+                        Entity :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:map/0">map</a>(),
+                        Reason :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:term/0">term</a>().</pre>
+
+      </div>
+
+
+  </section>
+</section>
+
+    </div>
+  </section>
+
   <section id="functions" class="details-list">
     <h1 class="section-heading">
       <a class="hover-link" href="#functions">
@@ -416,6 +686,139 @@ erltity
       <span class="text">Functions</span>
     </h1>
     <div class="functions-list">
+<section class="detail" id="create/2">
+
+  <div class="detail-header">
+    <a href="#create/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">create(EntityName, CreateRequest)</h1>
+
+
+        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L138" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> create(EntityName, CreateRequest) -> Result
+                when
+                    EntityName :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:atom/0">atom</a>(),
+                    CreateRequest :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:map/0">map</a>(),
+                    Result :: {ok, Entity} | {error, Reason},
+                    Entity :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:map/0">map</a>(),
+                    Reason :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:term/0">term</a>().</pre>
+
+      </div>
+
+Saves a new entity of type EntityName with the given CreateRequest.
+  </section>
+</section>
+<section class="detail" id="delete/2">
+
+  <div class="detail-header">
+    <a href="#delete/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">delete(EntityName, Id)</h1>
+
+
+        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L158" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> delete(EntityName, Id) -> Result
+                when
+                    EntityName :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:atom/0">atom</a>(), Id :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:term/0">term</a>(), Result :: ok | {error, Reason}, Reason :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:term/0">term</a>().</pre>
+
+      </div>
+
+Deletes an existing entity of type EntityName with the given Id.
+  </section>
+</section>
+<section class="detail" id="find/2">
+
+  <div class="detail-header">
+    <a href="#find/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">find(EntityName, Id)</h1>
+
+
+        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L168" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> find(EntityName, Id) -> Result
+              when
+                  EntityName :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:atom/0">atom</a>(),
+                  Id :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:term/0">term</a>(),
+                  Result :: {ok, Entity} | {error, Reason},
+                  Entity :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:map/0">map</a>(),
+                  Reason :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:term/0">term</a>().</pre>
+
+      </div>
+
+Finds an entity of type EntityName with the given Id.
+  </section>
+</section>
+<section class="detail" id="find/3">
+
+  <div class="detail-header">
+    <a href="#find/3" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">find(EntityName, Filters, Opts)</h1>
+
+
+        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L180" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> find(EntityName, Filters, Opts) -> Result
+              when
+                  EntityName :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:atom/0">atom</a>(),
+                  Filters :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:map/0">map</a>(),
+                  Opts :: <a href="#t:find_opts/0">find_opts</a>(),
+                  Result :: {ok, [Entity]} | {error, Reason},
+                  Entity :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:map/0">map</a>(),
+                  Reason :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:term/0">term</a>().</pre>
+
+      </div>
+
+Finds entities of type EntityName that match the given Filters and Opts, Opts can include pagination options like page, page_size, and offset.
+  </section>
+</section>
 <section class="detail" id="register/2">
 
   <div class="detail-header">
@@ -426,7 +829,7 @@ erltity
       <h1 class="signature" translate="no">register(SchemaPath, Opts)</h1>
 
 
-        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L78" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L117" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -459,7 +862,7 @@ Registers a schema from the given path and generates the new Erlang module.
       <h1 class="signature" translate="no">start_link(DbDriver, Opts)</h1>
 
 
-        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L59" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L98" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -488,7 +891,7 @@ Starts the erltity application connecting to the database using the given driver
       <h1 class="signature" translate="no">stop(StopArg)</h1>
 
 
-        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L66" class="icon-action" rel="help" aria-label="View Source">
+        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L105" class="icon-action" rel="help" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -504,6 +907,41 @@ Starts the erltity application connecting to the database using the given driver
       </div>
 
 Stops the erltity application.
+  </section>
+</section>
+<section class="detail" id="update/3">
+
+  <div class="detail-header">
+    <a href="#update/3" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">update(EntityName, Id, UpdateRequest)</h1>
+
+
+        <a href="https://github.com/yagogarea/erltity/blob/0.0.1/apps/erltity/src/erltity.erl#L149" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> update(EntityName, Id, UpdateRequest) -> Result
+                when
+                    EntityName :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:atom/0">atom</a>(),
+                    UpdateRequest :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:map/0">map</a>(),
+                    Id :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:term/0">term</a>(),
+                    Result :: {ok, Entity} | {error, Reason},
+                    Entity :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:map/0">map</a>(),
+                    Reason :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:term/0">term</a>().</pre>
+
+      </div>
+
+Updates an existing entity of type EntityName with the given Id and UpdateRequest.
   </section>
 </section>
 
