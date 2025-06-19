@@ -247,7 +247,7 @@ query_parameters(N, Acc) ->
 
 create_table(TableName, Schema) ->
     Properties = maps:to_list(maps:get(properties, Schema)),
-    Requiered = maps:get(required, Schema),
+    Requiered = maps:get(required, Schema, []),
     create_table_properties(Properties, Requiered, "CREATE TABLE " ++ atom_to_list(TableName) ++ " (\n\t").
 
 create_table_properties([], [], Acc) ->
