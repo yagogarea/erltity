@@ -70,11 +70,11 @@ parse_attributes(NewKey, NewMap, OldKey, OldMap) ->
     end.
 
 parse_integer(Schema) ->
-    IntegerKeys = [minimun, maximum, exclusive_minimum, exclusive_maximum, multiple_of],
+    IntegerKeys = [minimum, maximum, exclusive_minimum, exclusive_maximum, multiple_of],
     build_schema(integer, IntegerKeys, Schema).
 
 parse_number(Schema) ->
-    NumberKeys = [minimun, maximum, exclusive_minimum, exclusive_maximum],
+    NumberKeys = [minimum, maximum, exclusive_minimum, exclusive_maximum],
     NewSchema = build_schema(NumberKeys, Schema),
     IntegerSchema = put_only_if_exists(multiple_of, NewSchema, <<"multipleOf">>, Schema),
     #{
