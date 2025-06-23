@@ -31,6 +31,8 @@ parse(#{<<"enum">> := Enum}) ->
     #{enum => Enum};
 parse(#{<<"const">> := Const}) ->
     #{const => Const};
+parse(#{<<"type">> := List}) when is_list(List) ->
+    #{type => List};
 parse(_Schema) ->
     undefined_type.
 
