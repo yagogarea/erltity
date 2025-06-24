@@ -32,7 +32,7 @@ parse(#{<<"enum">> := Enum}) ->
 parse(#{<<"const">> := Const}) ->
     #{const => Const};
 parse(#{<<"type">> := List}) when is_list(List) ->
-    #{type => List};
+    #{type => lists:map(fun binary_to_atom/1, List)};
 parse(_Schema) ->
     undefined_type.
 
