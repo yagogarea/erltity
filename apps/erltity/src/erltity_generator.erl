@@ -41,112 +41,137 @@ generate(DbDriverModule, Schema, SchemaName) ->
             {find, ['Filters', 'Opts']}
         ]
     ),
-    {ValidateFunc, InternalExports, ValidateAuxFuns} = generate_validate(SchemaName, Schema, #{}),
+    {ValidatesFuns, ValidateExports, ValidateAuxFuns} = generate_validate(SchemaName, Schema, #{}),
     Attrs = 
         [
             ModAttr,
             BehaviourAttr,
             ExportAttr,
-            InternalExports,
-            ValidateFunc
+            erltity_generator_utils:export(ValidateExports)
         ]
         ++ ExternalExports
+        ++ ValidatesFuns
         ++ ValidateAuxFuns,
     [erl_syntax:revert(AST) || AST <- Attrs].
 
 generate_validate(SchemaName, Schema, _Opts) ->
-    {FunsName, ValidateExportsAcc, Functions} = add_requirements(SchemaName, maps:to_list(Schema)),
-    {
-        erl_syntax:function(
-            erl_syntax:atom(validate), [
-                erl_syntax:clause(
-                    [erl_syntax:variable(erltity_generator_utils:atom_capitalize(SchemaName))],
-                    none,
-                    [
-                        erl_syntax:application(
-                            erl_syntax:atom(validate_all),
-                            [
-                                erl_syntax:list(lists:reverse(FunsName))
-                            ]
-                        )
-                    ]
-                )
-            ]
-        ),
-        erltity_generator_utils:export(ValidateExportsAcc),
-        lists:reverse([validate_one_function(), validate_all_function() | Functions])
-    }.
+        add_requirements(
+            validate,
+            SchemaName,
+            Schema,
+            ordsets:new(),
+            ordsets:new()
+        ).
 
 %%%-----------------------------------------------------------------------------
 %%% INTERNAL FUNCTIONS
 %%%-----------------------------------------------------------------------------
-add_requirements(VariableName, [{type, integer} | T]) ->
-    validate_number(VariableName, integer, T);
-add_requirements(VariableName, [H | T]) when H =:= {anyOf,[#{type => integer}, #{type => float}]} ->
-    validate_number(VariableName, number, T);
-add_requirements(VariableName, [{type, array} | T]) ->
-    validate_array(VariableName, T);
-add_requirements(VariableName, [{type, string} | T]) ->
-    validate_string(VariableName, T);
-add_requirements(VariableName, [{type, boolean} | _T]) ->
-    validate_type(VariableName, boolean);
-add_requirements(VariableName, [{enum, List} | _T]) ->
+add_requirements(FunName, VariableName, _Schema = #{enum := List}, Exports, Functions) ->
     ParsedList = erl_syntax:list(lists:map(fun erltity_generator_utils:parse_element/1, List)),
-    erltity_generator_utils:check_expression(
-        erl_syntax:application(
-            erl_syntax:atom(lists),
-            erl_syntax:atom(member), 
-            [
-                erl_syntax:variable(VariableName),
-                ParsedList
-            ]
-        ),
-        invalid_enum_value,
-        ParsedList,
-        VariableName
-    );
-add_requirements(VariableName, [{type, List} | _T]) when is_list(List) ->
-    ParsedList = erl_syntax:list(
-        lists:map(
-            fun(Type) ->
-                validate_type(VariableName, Type)
-            end,
-            List
-        )
-    ),
-    erltity_generator_utils:check_expression(
-        erl_syntax:application(
-            erl_syntax:atom(validate_one),
-            [
-                ParsedList
-            ]
-        ),
-        invalid_type,
-        ParsedList,
-        VariableName
-    );
-add_requirements(VariableName, [{type, object} | T]) ->
-    validate_object(VariableName, T).
-
-
-validate_type(VariableName, Type) -> 
-    erltity_generator_utils:wrap_in_zero_arity_fun(
-        erltity_generator_utils:check_expression(
-            erl_syntax:application(
-                erl_syntax:atom(list_to_atom("is_" ++ atom_to_list(Type))), 
+    Fun = erl_syntax:function(
+        erl_syntax:atom(FunName), [
+            erl_syntax:clause(
+                [erl_syntax:variable(erltity_generator_utils:atom_capitalize(VariableName))],
+                none,
                 [
-                    erl_syntax:variable(VariableName)
+                    erl_syntax:application(
+                        erl_syntax:atom(validate_enum),
+                        [
+                            erl_syntax:variable(erltity_generator_utils:atom_capitalize(VariableName)),
+                            ParsedList
+                        ]
+                    )
                 ]
-            ),
-            invalid_type,
-            erl_syntax:atom(list_to_atom("expected_" ++ atom_to_list(Type))),
-            VariableName
-        )
-    ).
+            )
+        ]
+    ),
+    EnumFun = erl_syntax:function(
+        erl_syntax:atom(validate_enum),
+        [
+            erl_syntax:clause(
+                [erl_syntax:variable('Value'), erl_syntax:variable('EnumList')],
+                none,
+                [
+                    erltity_generator_utils:check_expression(
+                        erl_syntax:application(
+                            erl_syntax:atom(lists),
+                            erl_syntax:atom(member),
+                            [
+                                erl_syntax:variable('Value'),
+                                erl_syntax:variable('EnumList')
+                            ]
+                        ),
+                        invalid_enum_value,
+                        erl_syntax:variable('EnumList'),
+                        'Value'
+                    )
+                ]
+            )
+        ]
+    ),
+    NewExports = ordsets:add_element({FunName, 1}, Exports),
+    {Fun, NewExports, ordsets:add_element(EnumFun, Functions)};
+add_requirements(FunName, VariableName, Schema = #{type := integer}, Exports, Functions) ->
+    Requirements = maps:to_list(maps:remove(type, Schema)),
+    validate_number(FunName, VariableName, integer, Requirements, Exports, Functions);
+% add_requirements(FunName, VariableName, Schema = #{any_of := [#{type := integer}, #{type := float}]}, Exports, Functions) ->
+%     validate_number(FunName, VariableName, number, maps:to_list(maps:remove(anyOf, Schema)), Exports, Functions);
+add_requirements(FunName, VariableName, Schema = #{type := array}, Exports, Functions) ->
+    Requirements = maps:to_list(maps:remove(type, Schema)),
+    validate_array(FunName, VariableName, Requirements, Exports, Functions);
+add_requirements(FunName, VariableName, Schema = #{type := string}, Exports, Functions) ->
+    Requirements = maps:to_list(maps:remove(type, Schema)),
+    validate_string(FunName, VariableName, Requirements, Exports, Functions);
+add_requirements(FunName, VariableName, _Schema = #{type := boolean}, Exports, Functions) ->
+    FunAux = validate_type(boolean),
+    Fun = erl_syntax:function(
+        erl_syntax:atom(FunName), [
+            erl_syntax:clause(
+                [erl_syntax:variable(erltity_generator_utils:atom_capitalize(VariableName))],
+                none,
+                [
+                     erl_syntax:application(
+                        erl_syntax:atom(validate_type_boolean),
+                        [erl_syntax:variable(erltity_generator_utils:atom_capitalize(VariableName))]
+                    )
+                ]
+            )
+        ]
+    ),
+    NewExports = ordsets:add_element({FunName, 1}, Exports),
+    {Fun, NewExports, ordsets:add_element(FunAux, Functions) };
 
-validate_object(VariableName, Object) ->
-    Properties = maps:to_list(proplists:get_value(properties, Object)),
-    Required = proplists:get_value(required, Object, []),
+add_requirements(FunName, VariableName, Schema = #{type := object}, Exports, Functions) ->
+    validate_object(FunName, VariableName, maps:remove(type, Schema), Exports, Functions).
+
+validate_type(string) -> 
+    validate_type(list);
+validate_type(Type) -> 
+    VariableName = erltity_generator_utils:atom_capitalize(Type),
+    erl_syntax:function(
+            erl_syntax:atom(list_to_atom("validate_type_" ++ atom_to_list(Type))),
+            [
+                erl_syntax:clause(
+                    [erl_syntax:variable(VariableName)],
+                    [],
+                    [
+                        erltity_generator_utils:check_expression(
+                            erl_syntax:application(
+                                erl_syntax:atom(list_to_atom("is_" ++ atom_to_list(Type))),
+                                [erl_syntax:variable(VariableName)]
+                            ),
+                            invalid_type,
+                            erl_syntax:atom(list_to_atom("expected_" ++ atom_to_list(Type))),
+                            VariableName
+                        )
+                    ]
+                )
+            ]
+        ).
+
+validate_object(FunName, VariableName, Object, Exports, Functions) ->
+    Properties = maps:to_list(maps:get(properties, Object)),
+    Required = maps:get(required, Object, []),
     MapName = erltity_generator_utils:atom_capitalize(VariableName),
     ValidateKeysFun = erltity_generator_utils:wrap_in_zero_arity_fun(
         erl_syntax:application(
@@ -163,8 +188,16 @@ validate_object(VariableName, Object) ->
         )),
     case Required of
         [] ->
-            {Exports, Functions} = validate_properties(Properties, {[], [validate_list_function(VariableName)]}),
-            {[ValidateKeysFun], Exports, Functions};
+            {NewFun, NewExports, NewFunctions} = 
+                validate_properties(
+                    Properties,
+                    {
+                        [],
+                        Exports,
+                        ordsets:add_element(validate_list_function(VariableName), Functions)
+                    }
+                ),
+            ValidateCalls = [ValidateKeysFun];
         _Required ->
             Fun = erltity_generator_utils:wrap_in_zero_arity_fun(
                 erl_syntax:application(
@@ -177,29 +210,56 @@ validate_object(VariableName, Object) ->
                     ]
                 )
             ),
-            {Exports, Functions} = validate_properties(
+            {NewFun, NewExports, NewFunctions} = validate_properties(
                 Properties, 
-                {[],
-                [
-                    validate_list_function(VariableName),
-                    validate_required_function(MapName)
-                ]}
+                {
+                    [],
+                    Exports,
+                    ordsets:add_element(
+                        validate_list_function(VariableName),
+                        ordsets:add_element(validate_required_function('Map'), Functions)
+                    )
+                }
             ),
-            {[ValidateKeysFun, Fun], Exports, Functions}
-    end.
+            ValidateCalls = [ValidateKeysFun, Fun]
+    end,
+    Validate = erl_syntax:function(
+        erl_syntax:atom(FunName), [
+            erl_syntax:clause(
+                [erl_syntax:variable(erltity_generator_utils:atom_capitalize(VariableName))],
+                none,
+                [
+                    erl_syntax:application(
+                        erl_syntax:atom(validate_all),
+                        [
+                            erl_syntax:list(lists:reverse(ValidateCalls))
+                        ]
+                    )
+                ]
+            )
+        ]
+    ),
+    {[Validate | lists:reverse(NewFun)], NewExports, ordsets:add_element(validate_all_function(), NewFunctions)}.
 
-validate_properties([{PropertyName, Requirements}], {ExportsAcc, FunAcc}) ->
+validate_properties([{PropertyName, Requirements}], {PropertiesFunAcc, ExportsAcc, FunAcc}) ->
     FunName = list_to_atom("validate_" ++ binary_to_list(PropertyName)),
     Variable = binary_to_atom(erltity_generator_utils:capitalize(PropertyName)),
-    Fun = generate_validate_property_function(FunName, Variable, Requirements),
-    {[{FunName, 1} | ExportsAcc], [Fun | FunAcc]};
-validate_properties([{PropertyName, Requirements} | T], {ExportsAcc, FunAcc}) ->
+    {NewFun, NewExports, NewFunAcc} = add_requirements(FunName, Variable, Requirements, ExportsAcc, FunAcc),
+    {[NewFun | PropertiesFunAcc], NewExports, NewFunAcc};
+validate_properties([{PropertyName, Requirements} | T], {PropertiesFunAcc, ExportsAcc, FunAcc}) ->
     FunName = list_to_atom("validate_" ++ binary_to_list(PropertyName)),
     Variable = binary_to_atom(erltity_generator_utils:capitalize(PropertyName)),
-    Fun = generate_validate_property_function(FunName, Variable, Requirements),
-    validate_properties(T, {[{FunName, 1} | ExportsAcc], [Fun | FunAcc]}).
+    {NewFun, NewExports, NewFunAcc} = add_requirements(FunName, Variable, Requirements, ExportsAcc, FunAcc),
+    validate_properties(
+        T,
+        {
+            [NewFun | PropertiesFunAcc],
+            NewExports,
+            NewFunAcc
+        }
+    ).
 
-generate_validate_property_function(FunName, Variable, Requirements) ->
+generate_validate_property_function(FunName, Variable, FunCalls) ->
     erl_syntax:function(
         erl_syntax:atom(FunName), [
             erl_syntax:clause(
@@ -207,11 +267,11 @@ generate_validate_property_function(FunName, Variable, Requirements) ->
                 none,
                 [
                     erl_syntax:application(
-                            erl_syntax:atom(validate_all),
-                            [
-                                add_requirements(Variable, maps:to_list(Requirements))
-                            ]
-                        )
+                        erl_syntax:atom(validate_all),
+                        [
+                            erl_syntax:list(FunCalls)
+                        ]
+                    )
                 ]
             )
         ]
@@ -220,68 +280,273 @@ generate_validate_property_function(FunName, Variable, Requirements) ->
 %%%-----------------------------------------------------------------------------
 %%% INTEGER VALIDATION FUNCTIONS
 %%%-----------------------------------------------------------------------------
-validate_number(VariableName, Type, Requirements) ->
-    erl_syntax:list(
-        validate_number_acc(
-            VariableName,
-            Requirements,
-            [validate_type(VariableName, Type)]
-        )
-    ).
+validate_number(FunName, VariableName, Type, Requirements, Exports, Functions) ->
+    FunCall = fun_call_validate_type(Type, VariableName),
+    {FunCalls, NewExports, NewFuns} = validate_number_acc(
+        FunName,
+        VariableName,
+        Requirements,
+        [FunCall],
+        Exports,
+        ordsets:add_element(validate_type(Type), Functions)
+    ),
+    NewFun = generate_validate_property_function(FunName, VariableName, lists:reverse(FunCalls)),
+    {NewFun, ordsets:add_element({FunName, 1}, NewExports), NewFuns}.
 
-validate_number_acc(_VariableName, [], Acc) ->
-    lists:reverse(Acc);
-validate_number_acc(VariableName, [{minimum, Value} | T], Acc) ->
-    validate_number_acc(VariableName, T, [
-        erltity_generator_utils:wrap_in_zero_arity_fun(
-            compare_numbers_function(VariableName, Value, '>=', value_below_minimun))| Acc
-    ]);
-validate_number_acc(VariableName, [{maximum, Value} | T], Acc) ->
-    validate_number_acc(VariableName, T, [
-        erltity_generator_utils:wrap_in_zero_arity_fun(compare_numbers_function(VariableName, Value, '=<', value_above_maximun)) 
-        | Acc
-    ]);
-validate_number_acc(VariableName, [{exclusive_minimum, Value} | T], Acc) ->
-    validate_number_acc(VariableName, T, [
-        erltity_generator_utils:wrap_in_zero_arity_fun(
-            compare_numbers_function(VariableName, Value, '>', value_below_exclusive_minimum))| Acc
-    ]);
-validate_number_acc(VariableName, [{exclusive_maximum, Value} | T], Acc) ->
-    validate_number_acc(VariableName, T, [
-        erltity_generator_utils:wrap_in_zero_arity_fun(compare_numbers_function(VariableName, Value, '<', value_above_exclusive_maximum)) 
-        | Acc
-    ]);
-validate_number_acc(VariableName, [{multiple_of, Value} | T], Acc) ->
-    validate_number_acc(VariableName, T, [
-        erltity_generator_utils:wrap_in_zero_arity_fun(compare_numbers_function(VariableName, Value, 'rem', 0, not_multiple_of)) 
-        | Acc
-    ]).
+validate_number_acc(_FunName, _VariableName, [], FunCalls, Exports, Functions) ->
+    {FunCalls, Exports, Functions};
+validate_number_acc(_FunName, VariableName, [{minimum, Value} | T], FunCalls, Exports, Functions) ->
+    {FunCall, Fun} = compare_numbers_function(validate_minimum, VariableName, 'Minimun', Value, '>=', value_below_minimum),
+    validate_number_acc(
+        _FunName,
+        VariableName,
+        T, 
+        [FunCall | FunCalls],
+        Exports,
+        ordsets:add_element(Fun, Functions)
+    );
+validate_number_acc(_FunName, VariableName, [{maximum, Value} | T], FunCalls, Exports, Functions) ->
+    {FunCall, Fun} = compare_numbers_function(validate_maximum, VariableName, 'Maximum', Value, '=<', value_above_maximum),
+    validate_number_acc(
+        _FunName,
+        VariableName,
+        T, 
+        [FunCall | FunCalls],
+        Exports,
+        ordsets:add_element(Fun, Functions)
+    );
+validate_number_acc(_FunName, VariableName, [{exclusive_minimum, Value} | T], FunCalls, Exports, Functions) ->
+     {FunCall, Fun} = compare_numbers_function(validate_exclusive_minimum, VariableName, 'ExclusiveMinimum', Value, '>', value_below_exclusive_minimum),
+        validate_number_acc(
+        _FunName,
+        VariableName,
+        T, 
+        [FunCall | FunCalls],
+        Exports,
+        ordsets:add_element(Fun, Functions)
+    );
+validate_number_acc(_FunName, VariableName, [{exclusive_maximum, Value} | T], FunCalls, Exports, Functions) ->
+     {FunCall, Fun} = compare_numbers_function(validate_exclusive_maximum, VariableName, 'ExclusiveMaximum', Value, '>', value_above_exclusive_maximum),
+        validate_number_acc(
+        _FunName,
+        VariableName,
+        T, 
+        [FunCall | FunCalls],
+        Exports,
+        ordsets:add_element(Fun, Functions)
+    );
+validate_number_acc(_FunName, VariableName, [{multiple_of, Value} | T], FunCalls, Exports, Functions) ->
+    {FunCall, Fun} = compare_numbers_function(validate_multiple_of, VariableName, 'MultipleOf', Value, 'rem', not_multiple_of),
+    validate_number_acc(
+        _FunName,
+        VariableName,
+        T, 
+        [FunCall | FunCalls],
+        Exports,
+        ordsets:add_element(Fun, Functions)
+    ).
 %%%-----------------------------------------------------------------------------
 %%% ARRAY VALIDATION FUNCTIONS
 %%%-----------------------------------------------------------------------------
-% [additional_items, max_items, min_items, unique_items, contains],
-validate_array(VariableName, Requirements) ->
-    erl_syntax:list(
-        validate_array(
-            VariableName,
-            Requirements,
-            [validate_type(VariableName, integer)]
-        )
-    ).
+% TO DO: Validate contains property
+validate_array(FunName, VariableName, T, Exports, Functions) ->
+    validate_array(FunName, VariableName, T, [], Exports, Functions).
 
-validate_array(_VariableName, [], Acc) ->
-    lists:reverse(Acc);
-validate_array(VariableName, [{items, Value} | T], Acc) ->
-    validate_array(VariableName, T, [
-        erltity_generator_utils:wrap_in_zero_arity_fun(
-            compare_numbers_function(VariableName, Value, '>=', value_below_minimun))| Acc
-    ]).
+validate_array(FunName, VariableName, [], FunCalls, Exports, Functions) ->
+    NewFun = generate_validate_property_function(FunName, VariableName, lists:reverse(FunCalls)),
+    {NewFun, ordsets:add_element({FunName, 1}, Exports), Functions};
+validate_array(FunName, VariableName, [{min_items, Value} | T], FunCalls, Exports, Functions) ->
+    FunCall = erltity_generator_utils:fun_call_in_zero_arity_fun(
+        validate_min_items,
+        [
+            erl_syntax:variable(VariableName),
+            erl_syntax:integer(Value)
+        ]
+    ),
+    Fun = erl_syntax:function(
+        erl_syntax:atom(validate_min_items),
+        [
+            erl_syntax:clause(
+                [
+                    erl_syntax:variable('Value'),
+                    erl_syntax:variable('MinItems')
+                ],
+                none,
+                [min_length_function('Value', 'MinItems')]
+            )
+        ]
+    ),
+    validate_array(
+        FunName,
+        VariableName,
+        T,
+        [FunCall | FunCalls],
+        Exports,
+        ordsets:add_element(Fun, Functions)
+    );
+validate_array(FunName, VariableName, [{max_items, Value} | T], FunCalls, Exports, Functions) ->
+    FunCall = erltity_generator_utils:fun_call_in_zero_arity_fun(
+        validate_max_items,
+        [
+            erl_syntax:variable(VariableName),
+            erl_syntax:integer(Value)
+        ]
+    ),
+    Fun = erl_syntax:function(
+        erl_syntax:atom(validate_max_items),
+        [
+            erl_syntax:clause(
+                [
+                    erl_syntax:variable('Value'),
+                    erl_syntax:variable('MaxItems')
+                ],
+                none,
+                [max_length_function('Value', 'MaxItems')]
+            )
+        ]
+    ),
+    validate_array(
+        FunName,
+        VariableName,
+        T,
+        [FunCall | FunCalls],
+        Exports,
+        ordsets:add_element(Fun, Functions)
+    );
+validate_array(FunName, VariableName, [{unique_items, true} | T], FunCalls, Exports, Functions) ->
+    FunCall = erltity_generator_utils:fun_call_in_zero_arity_fun(
+        validate_unique_items,
+        [
+            erl_syntax:variable(VariableName)
+        ]
+    ),
+    Fun = erl_syntax:function(
+        erl_syntax:atom(validate_unique_items),
+        [
+            erl_syntax:clause(
+                [
+                    erl_syntax:variable('Value')
+                ],
+                none,
+                [erltity_generator_utils:check_expression(
+                    erl_syntax:infix_expr(
+                        erl_syntax:application(
+                            erl_syntax:atom(length),
+                            [erl_syntax:variable('Value')]
+                        ),
+                        erl_syntax:operator('=='),
+                        erl_syntax:application(
+                            erl_syntax:atom(length),
+                            [
+                                erl_syntax:application(
+                                    erl_syntax:atom(lists),
+                                    erl_syntax:atom(usort),
+                                    [erl_syntax:variable('Value')]
+                                )
+                            ]
+                        )
+                    ),
+                    not_unique_items,
+                    erl_syntax:variable('Value'),
+                    'Value'
+                )]
+            )
+        ]
+    ),
+    validate_array(
+        FunName,
+        VariableName,
+        T,
+        [FunCall | FunCalls],
+        Exports,
+        ordsets:add_element(Fun, Functions)
+    );
+validate_array(FunName, VariableName, Proplist, FunCalls, Exports, Functions) ->
+    ItemSchema = proplists:get_value(items, Proplist),
+    AdditionalItems = proplists:get_value(additional_items, Proplist, true),
+    {FunCallsWithLength, NewFunctions1} =
+        case {is_list(ItemSchema), AdditionalItems} of
+            {true, false} ->
+                LengthCheckFunCall = erltity_generator_utils:fun_call_in_zero_arity_fun(
+                    validate_exact_length,
+                    [
+                        erl_syntax:variable(VariableName),
+                        erl_syntax:integer(length(ItemSchema))
+                    ]
+                ),
+                LengthCheckFun =
+                    erl_syntax:function(
+                        erl_syntax:atom(validate_exact_length),
+                        [
+                            erl_syntax:clause(
+                                [
+                                    erl_syntax:variable('Value'),
+                                    erl_syntax:variable('ExpectedLength')
+                                ],
+                                none,
+                                [
+                                    erltity_generator_utils:check_expression(
+                                        erl_syntax:infix_expr(
+                                            erl_syntax:application(
+                                                erl_syntax:atom(length),
+                                                [erl_syntax:variable('Value')]
+                                            ),
+                                            erl_syntax:operator('=='),
+                                            erl_syntax:variable('ExpectedLength')
+                                        ),
+                                        array_length_mismatch,
+                                        erl_syntax:variable('ExpectedLength'),
+                                        'Value'
+                                    )
+                                ]
+                            )
+                        ]
+                    ),
+                { [LengthCheckFunCall], ordsets:add_element(LengthCheckFun, Functions) };
+            _ ->
+                {[], Functions}
+        end,
+    {FunCallsTypes, NewFunctions2} =
+        case ItemSchema of
+            List when is_list(List) ->
+                FunList = [fun_call_validate_type(maps:get(type, Type), VariableName) || Type <- List],
+                FunListSyntax = erl_syntax:list(FunList),
+                FunCallsForList = erltity_generator_utils:fun_call_in_zero_arity_fun(
+                    validate_in_order,
+                    [
+                        FunListSyntax,
+                        erl_syntax:variable(VariableName)
+                    ]
+                ),
+                NewFuncs = lists:foldl(
+                    fun(Type2, Acc) ->
+                        ordsets:add_element(validate_type(maps:get(type, Type2)), Acc)
+                    end,
+                    NewFunctions1,
+                    List
+                ),
+                {[FunCallsForList], ordsets:add_element(validate_in_order_function(), NewFuncs)};
+            #{type := Type} ->
+                {
+                    [fun_call_validate_type(Type, VariableName)],
+                    ordsets:add_element(validate_type(Type), NewFunctions1)
+                }
+        end,
+    NewFunCalls =  FunCallsTypes ++ FunCallsWithLength ++ FunCalls,
+    validate_array(
+        FunName,
+        VariableName,
+        proplists:delete(items, proplists:delete(additional_items, Proplist)),
+        NewFunCalls,
+        Exports,
+        NewFunctions2
+    ).
 
 %%%-----------------------------------------------------------------------------
 %%% STRING VALIDATION FUNCTIONS
 %%%-----------------------------------------------------------------------------
-validate_string(VariableName, Map) ->
-    Requirements = proplists:delete(content_media_type, Map),
+validate_string(FunName, VariableName, T, Exports, Functions) ->
+    Requirements = proplists:delete(content_media_type, T),
     case
         {
             proplists:get_value(format, Requirements, undefined),
@@ -289,101 +554,295 @@ validate_string(VariableName, Map) ->
         }
     of
         {<<"binary">>, _AnyEncoding} ->
-            erl_syntax:list(
-                validate_binary(
-                    VariableName,
-                    proplists:delete(format, proplists:delete(content_encoding, Requirements)),
-                    [validate_type(VariableName, binary)]
-                )
+            validate_binary(
+                FunName,
+                VariableName,
+                proplists:delete(content_media_type, proplists:delete(format, proplists:delete(content_encoding, Requirements))),
+                [fun_call_validate_type(binary, VariableName)],
+                Exports,
+                ordsets:add_element(validate_type(binary), Functions)
             );
         {_AnyFormat, <<"base64">>} ->
-            erl_syntax:list(
-                validate_binary(
-                    VariableName,
-                    proplists:delete(format, proplists:delete(content_encoding, Requirements)),
-                    [validate_type(VariableName, binary)]
-                )
+            validate_binary(
+                FunName,
+                VariableName,
+               proplists:delete(content_media_type, proplists:delete(format, proplists:delete(content_encoding, Requirements))),
+                [fun_call_validate_type(binary, VariableName)],
+                Exports,
+                ordsets:add_element(validate_type(binary), Functions)
             );
         {<<"byte">>, _AnyEncoding} ->
-            erl_syntax:list(
-                validate_binary(
-                    VariableName,
-                    proplists:delete(format, proplists:delete(content_encoding, Requirements)),
-                    [validate_type(VariableName, binary)]
-                )
+            validate_binary(
+                FunName,
+                VariableName,
+                proplists:delete(content_media_type, proplists:delete(format, proplists:delete(content_encoding, Requirements))),
+                [fun_call_validate_type(binary, VariableName)],
+                Exports,
+                ordsets:add_element(validate_type(binary), Functions)
             );
         _ -> % TO DO: Validate other formats
-            erl_syntax:list(
-                validate_string(
-                    VariableName,
-                    proplists:delete(format, proplists:delete(content_encoding, Requirements)),
-                    [validate_type(VariableName, list)]
-                )
+            validate_string(
+                FunName,
+                VariableName,
+                proplists:delete(format, proplists:delete(content_encoding, Requirements)),
+                [fun_call_validate_type(list, VariableName)],
+                Exports,
+                ordsets:add_element(validate_type(list), Functions)
             )
     end.
-validate_string(_VariableName, [], Acc) ->
-    lists:reverse(Acc);
-validate_string(VariableName, [{min_length, Value} | T], Acc) ->
-    validate_string(VariableName, T, [
-        erltity_generator_utils:wrap_in_zero_arity_fun(min_length_function(VariableName, Value))| Acc
-    ]);
-validate_string(VariableName, [{max_length, Value} | T], Acc) ->
-    validate_string(VariableName, T, [
-       erltity_generator_utils:wrap_in_zero_arity_fun(max_length_function(VariableName, Value)) | Acc
-    ]);
-validate_string(VariableName, [{pattern, Value} | T], Acc) ->
-    validate_string(VariableName, T, [
-       erltity_generator_utils:wrap_in_zero_arity_fun(pattern_function(VariableName, binary_to_list(Value))) | Acc
-    ]).
+validate_string(FunName, VariableName, [], FunCalls, Exports, Functions) ->
+    NewFun = generate_validate_property_function(FunName, VariableName, lists:reverse(FunCalls)),
+    {NewFun, ordsets:add_element({FunName, 1}, Exports), Functions};
+validate_string(FunName, VariableName, [{min_length, Value} | T], FunCalls, Exports, Functions) ->
+    FunCall =  erltity_generator_utils:fun_call_in_zero_arity_fun(
+        validate_min_length,
+        [
+            erl_syntax:variable(VariableName),
+            erl_syntax:integer(Value)
+        ]
+    ),
+    Fun = erl_syntax:function(
+        erl_syntax:atom(validate_min_length),
+        [
+            erl_syntax:clause(
+                [
+                    erl_syntax:variable('Value'),
+                    erl_syntax:variable('MinLength')
+                ],
+                none,
+                [min_length_function('Value', 'MinLength')]
+            )
+        ]
+    ),
+    validate_string(
+        FunName,
+        VariableName,
+        T,
+        [FunCall | FunCalls],
+        Exports,
+        ordsets:add_element(Fun, Functions)
+    );
+validate_string(FunName, VariableName, [{max_length, Value} | T], FunCalls, Exports, Functions) ->
+    FunCall =  erltity_generator_utils:fun_call_in_zero_arity_fun(
+        validate_max_length,
+        [
+            erl_syntax:variable(VariableName),
+            erl_syntax:integer(Value)
+        ]
+    ),
+    Fun = erl_syntax:function(
+        erl_syntax:atom(validate_max_length),
+        [
+            erl_syntax:clause(
+                [
+                    erl_syntax:variable('Value'),
+                    erl_syntax:variable('MaxLength')
+                ],
+                none,
+                [max_length_function('Value', 'MaxLength')]
+            )
+        ]
+    ),
+    validate_string(
+        FunName,
+        VariableName,
+        T,
+        [FunCall | FunCalls],
+        Exports,
+        ordsets:add_element(Fun, Functions)
+    );
+validate_string(FunName, VariableName, [{pattern, Value} | T], FunCalls, Exports, Functions) ->
+    FunCall = erltity_generator_utils:fun_call_in_zero_arity_fun(
+        validate_pattern,
+        [
+            erl_syntax:variable(VariableName),
+            erl_syntax:string(binary_to_list(Value))
+        ]
+    ),
+    Fun = erl_syntax:function(
+        erl_syntax:atom(validate_pattern),
+        [
+            erl_syntax:clause(
+                [
+                    erl_syntax:variable('Value'),
+                    erl_syntax:variable('Pattern')
+                ],
+                none,
+                [pattern_function('Value', 'Pattern')]
+            )
+        ]
+    ),
+    validate_string(
+        FunName,
+        VariableName,
+        T,
+        [FunCall | FunCalls],
+        Exports,
+        ordsets:add_element(Fun, Functions)
+    ).
 
 %%%-----------------------------------------------------------------------------
 %%% BINARY VALIDATION FUNCTIONS
 %%%-----------------------------------------------------------------------------
-validate_binary(_VariableName, [], Acc) ->
-    lists:reverse(Acc);
-validate_binary(VariableName, [{min_length, Value} | T], Acc) ->
-    validate_binary(VariableName, T, [
-        erltity_generator_utils:wrap_in_zero_arity_fun(binary_min_length_function(VariableName, Value))| Acc
-    ]);
-validate_binary(VariableName, [{max_length, Value} | T], Acc) ->
-    validate_binary(VariableName, T, [
-       erltity_generator_utils:wrap_in_zero_arity_fun(binary_max_length_function(VariableName, Value)) | Acc
-    ]);
-validate_binary(VariableName, [{pattern, Value} | T], Acc) ->
-    validate_binary(VariableName, T, [
-       erltity_generator_utils:wrap_in_zero_arity_fun(pattern_function(VariableName, binary_to_list(Value))) | Acc
-    ]).
+validate_binary(FunName, VariableName, [], FunCalls, Exports, Functions) ->
+    NewFun = generate_validate_property_function(FunName, VariableName, lists:reverse(FunCalls)),
+    {NewFun, ordsets:add_element({FunName, 1}, Exports), Functions};
+validate_binary(FunName, VariableName, [{min_length, Value} | T], FunCalls, Exports, Functions) ->
+    FunCall = erltity_generator_utils:fun_call_in_zero_arity_fun(
+        validate_binary_min_length,
+        [
+            erl_syntax:variable(VariableName),
+            erl_syntax:integer(Value)
+        ]
+    ),
+    Fun = erl_syntax:function(
+        erl_syntax:atom(validate_binary_min_length),
+        [
+            erl_syntax:clause(
+                [
+                    erl_syntax:variable('Value'),
+                    erl_syntax:variable('MinLength')
+                ],
+                none,
+                [binary_min_length_function('Value', 'MinLength')]
+            )
+        ]
+    ),
+    validate_binary(
+        FunName,
+        VariableName,
+        T,
+        [FunCall | FunCalls],
+        Exports,
+        ordsets:add_element(Fun, Functions)
+    );
+validate_binary(FunName, VariableName, [{max_length, Value} | T], FunCalls, Exports, Functions) ->
+    FunCall = erltity_generator_utils:fun_call_in_zero_arity_fun(
+        validate_binary_max_length,
+        [
+            erl_syntax:variable(VariableName),
+            erl_syntax:integer(Value)
+        ]
+    ),
+    Fun = erl_syntax:function(
+        erl_syntax:atom(validate_binary_max_length),
+        [
+            erl_syntax:clause(
+                [
+                    erl_syntax:variable('Value'),
+                    erl_syntax:variable('MaxLength')
+                ],
+                none,
+                [binary_max_length_function('Value', 'MaxLength')]
+            )
+        ]
+    ),
+    validate_binary(
+        FunName,
+        VariableName,
+        T,
+        [FunCall | FunCalls],
+        Exports,
+        ordsets:add_element(Fun, Functions)
+    );
+validate_binary(FunName, VariableName, [{pattern, Value} | T], FunCalls, Exports, Functions) ->
+    FunCall = erltity_generator_utils:fun_call_in_zero_arity_fun(
+        validate_binary_pattern,
+        [
+            erl_syntax:variable(VariableName),
+            erl_syntax:string(binary_to_list(Value))
+        ]
+    ),
+    Fun = erl_syntax:function(
+        erl_syntax:atom(validate_binary_pattern),
+        [
+            erl_syntax:clause(
+                [
+                    erl_syntax:variable('Value'),
+                    erl_syntax:variable('Pattern')
+                ],
+                none,
+                [pattern_function('Value', 'Pattern')]
+            )
+        ]
+    ),
+    validate_binary(
+        FunName,
+        VariableName,
+        T,
+        [FunCall | FunCalls],
+        Exports,
+        ordsets:add_element(Fun, Functions)
+    ).
 
 %%%-----------------------------------------------------------------------------
 %%% GENERATED FUNCTIONS
 %%%-----------------------------------------------------------------------------
-compare_numbers_function(VariableName, Number, Operator, Error) ->
-    erltity_generator_utils:check_expression(
-        erl_syntax:infix_expr(
-            erl_syntax:variable(VariableName),
-            erl_syntax:operator(Operator),
-            erl_syntax:integer(Number)
-        ),
-        Error,
-        erl_syntax:integer(Number),
-        VariableName
+fun_call_validate_type(string, VariableName) ->
+    fun_call_validate_type(list, VariableName);
+fun_call_validate_type(Type, VariableName) ->
+    erltity_generator_utils:fun_call_in_zero_arity_fun(
+        list_to_atom("validate_type_" ++ atom_to_list(Type)),
+        [erl_syntax:variable(VariableName)]
     ).
 
-compare_numbers_function(VariableName, Number, Operator, Expected, Error) ->
-    erltity_generator_utils:check_expression(
-        erl_syntax:infix_expr(
-            erl_syntax:infix_expr(
-                erl_syntax:variable(VariableName),
-                erl_syntax:operator(Operator),
-                erl_syntax:integer(Number)
-            ),
-            erl_syntax:operator('=='),
-            erl_syntax:integer(Expected)
+compare_numbers_function(FunName, VariableName, LimitName, Number, Operator, Error) ->
+    CheckExpr =
+        case Operator of
+            'rem' ->
+                Expr1 = erl_syntax:infix_expr(
+                    erl_syntax:infix_expr(
+                        erl_syntax:variable('Number'),
+                        erl_syntax:operator('rem'),
+                        erl_syntax:variable(LimitName)
+                    ),
+                    erl_syntax:operator('=='),
+                    erl_syntax:integer(0)
+                ),
+                    erltity_generator_utils:check_expression(
+                        Expr1,
+                        Error,
+                        erl_syntax:integer(Number),
+                        'Number'
+                    );
+            _ ->
+                Expr2 = erl_syntax:infix_expr(
+                    erl_syntax:variable('Number'),
+                    erl_syntax:operator(Operator),
+                    erl_syntax:variable(LimitName)
+                ),
+                    erltity_generator_utils:check_expression(
+                        Expr2,
+                        Error,
+                        erl_syntax:variable(LimitName),
+                        'Number'
+                    )
+        end,
+
+    {
+        erltity_generator_utils:wrap_in_zero_arity_fun(
+            erl_syntax:application(
+                erl_syntax:atom(FunName),
+                [
+                    erl_syntax:variable(VariableName),
+                    erl_syntax:integer(Number)
+                ]
+            )
         ),
-        Error,
-        erl_syntax:integer(Number),
-        VariableName
-    ).
+        erl_syntax:function(
+            erl_syntax:atom(FunName),
+            [
+                erl_syntax:clause(
+                    [
+                        erl_syntax:variable('Number'),
+                        erl_syntax:variable(LimitName)
+                    ],
+                    none,
+                    [CheckExpr]
+                )
+            ]
+        )
+    }.
 
 binary_min_length_function(VariableName, MinLength) ->
     erltity_generator_utils:check_expression(
@@ -393,10 +852,10 @@ binary_min_length_function(VariableName, MinLength) ->
                 [erl_syntax:variable(VariableName)]
             ),
             erl_syntax:operator('>='),
-            erl_syntax:integer(MinLength)
+            erl_syntax:variable(MinLength)
         ),
         length_below_minimum,
-        erl_syntax:integer(MinLength),
+        erl_syntax:variable(MinLength),
         VariableName
     ).
 
@@ -408,10 +867,10 @@ binary_max_length_function(VariableName, MinLength) ->
                 [erl_syntax:variable(VariableName)]
             ),
             erl_syntax:operator('=<'),
-            erl_syntax:integer(MinLength)
+            erl_syntax:variable(MinLength)
         ),
         length_exceeds_maximum,
-        erl_syntax:integer(MinLength),
+        erl_syntax:variable(MinLength),
         VariableName
     ).
 
@@ -423,10 +882,10 @@ min_length_function(VariableName, MinLength) ->
                 [erl_syntax:variable(VariableName)]
             ),
             erl_syntax:operator('>='),
-            erl_syntax:integer(MinLength)
+            erl_syntax:variable(MinLength)
         ),
         length_below_minimum,
-        erl_syntax:integer(MinLength),
+        erl_syntax:variable(MinLength),
         VariableName
     ).
 
@@ -438,10 +897,10 @@ max_length_function(VariableName, MinLength) ->
                 [erl_syntax:variable(VariableName)]
             ),
             erl_syntax:operator('=<'),
-            erl_syntax:integer(MinLength)
+            erl_syntax:variable(MinLength)
         ),
         length_exceeds_maximum,
-        erl_syntax:integer(MinLength),
+        erl_syntax:variable(MinLength),
         VariableName
     ).
 
@@ -452,7 +911,7 @@ pattern_function(VariableName, Pattern) ->
                 erl_syntax:atom(run),
                 [
                     erl_syntax:variable(VariableName),
-                    erl_syntax:string(Pattern),
+                    erl_syntax:variable(Pattern),
                     erl_syntax:list([
                         erl_syntax:tuple([
                             erl_syntax:atom(capture),
@@ -464,10 +923,9 @@ pattern_function(VariableName, Pattern) ->
         erl_syntax:atom(match),
         erl_syntax:atom(nomatch),
         pattern_mismatch,
-        erl_syntax:string(Pattern),
+        erl_syntax:variable(Pattern),
         VariableName
     ).
-
 validate_all_function() ->
     FunctionName = validate_all,
     Return = erl_syntax:atom(true),
@@ -493,33 +951,90 @@ validate_all_function() ->
         FailReturn
     ).
 
-validate_one_function() ->
-    FunctionName = validate_one,
+validate_in_order_function() ->
+    FunctionName = validate_in_order,
     Return = erl_syntax:atom(true),
-    HeadName = 'F',
-    TailName = 'Rest',
-    Condition = erl_syntax:application(
-        erl_syntax:variable('F'),
-        []
+    HeadF = 'F',
+    TailFs = 'RestFuns',
+    HeadE = 'Element',
+    TailEs = 'Rest',
+    Clause1 = erl_syntax:clause(
+        [erl_syntax:nil(), erl_syntax:underscore()],
+        [],
+        [Return]
     ),
-    erltity_generator_utils:tail_recursion_function(
-        validate_one,
-        [],
-        Return,
-        HeadName,
-        TailName,
-        [],
+    ParamFs = erl_syntax:cons(
+        erl_syntax:variable(HeadF),
+        erl_syntax:variable(TailFs)
+    ),
+    ParamEs = erl_syntax:cons(
+        erl_syntax:variable(HeadE),
+        erl_syntax:variable(TailEs)
+    ),
+    Condition = erl_syntax:application(
+        erl_syntax:variable(HeadF),
+        [erl_syntax:variable(HeadE)]
+    ),
+    CaseExpr = erl_syntax:case_expr(
         Condition,
         [
-            {erl_syntax:atom(true), erl_syntax:atom(true)},
-            {
-                erl_syntax:underscore(), 
-                erl_syntax:application(
-                    erl_syntax:atom(FunctionName),
-                    [erl_syntax:variable(TailName)])
-            }
+            erl_syntax:clause(
+                [erl_syntax:atom(true)],
+                [],
+                [
+                    erl_syntax:application(
+                        erl_syntax:atom(FunctionName),
+                        [erl_syntax:variable(TailFs), erl_syntax:variable(TailEs)]
+                    )
+                ]
+            ),
+            erl_syntax:clause(
+                [erl_syntax:variable('Error')],
+                [],
+                [erl_syntax:variable('Error')]
+            )
         ]
+    ),
+
+    Clause2 = erl_syntax:clause(
+        [ParamFs, ParamEs],
+        [],
+        [CaseExpr]
+    ),
+
+    erl_syntax:function(
+        erl_syntax:atom(FunctionName),
+        [Clause1, Clause2]
     ).
+
+
+% validate_one_function() ->
+%     FunctionName = validate_one,
+%     Return = erl_syntax:atom(true),
+%     HeadName = 'F',
+%     TailName = 'Rest',
+%     Condition = erl_syntax:application(
+%         erl_syntax:variable('F'),
+%         []
+%     ),
+%     erltity_generator_utils:tail_recursion_function(
+%         validate_one,
+%         [],
+%         Return,
+%         HeadName,
+%         TailName,
+%         [],
+%         Condition,
+%         [
+%             {erl_syntax:atom(true), erl_syntax:atom(true)},
+%             {
+%                 erl_syntax:underscore(), 
+%                 erl_syntax:application(
+%                     erl_syntax:atom(FunctionName),
+%                     [erl_syntax:variable(TailName)])
+%             }
+%         ]
+%     ).
 
 validate_required_function(VariableName) ->
     Args = [VariableName],

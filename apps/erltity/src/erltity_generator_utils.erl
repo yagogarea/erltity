@@ -8,6 +8,7 @@
     check_expression/6,
     db_call_function/4,
     export/1,
+    fun_call_in_zero_arity_fun/2,
     tail_recursion_function/8,
     tail_recursion_function/9,
     tail_recursion_function/10,
@@ -89,6 +90,22 @@ export(List) ->
                     end,
                     List
                 )
+            )
+        ]
+    ).
+
+fun_call_in_zero_arity_fun(FunName, Args) ->
+    erl_syntax:fun_expr(
+        [
+            erl_syntax:clause(
+                [],
+                [],
+                [
+                    erl_syntax:application(
+                        erl_syntax:atom(FunName),
+                        Args
+                    )
+                ]
             )
         ]
     ).
