@@ -11,10 +11,18 @@
 -spec parse(Json) -> Schema when
     Json :: map(),
     Schema :: map().
+parse(null) ->
+    undefined;
 parse(true) ->
     true;
 parse(false) ->
     false;
+parse(#{<<"enum">> := Enum, <<"type">> := Type}) ->
+    #{type => binary_to_atom(Type), enum => Enum};
+parse(#{<<"const">> := Const}) ->
+    #{const => Const};
+parse(#{<<"type">> := <<"null">>}) ->
+    #{type => undefined};
 parse(#{<<"type">> := <<"integer">>} = Schema) ->
     parse_integer(Schema);
 parse(#{<<"type">> := <<"number">>} = Schema) ->
@@ -27,12 +35,16 @@ parse(#{<<"type">> := <<"boolean">>}) ->
     #{type => boolean};
 parse(#{<<"type">> := <<"object">>} = Schema) ->
     parse_object(Schema);
-parse(#{<<"enum">> := Enum}) ->
-    #{enum => Enum};
-parse(#{<<"const">> := Const}) ->
-    #{const => Const};
 parse(#{<<"type">> := List}) when is_list(List) ->
     #{type => lists:map(fun binary_to_atom/1, List)};
+parse(#{<<"not">> := Schema}) ->
+    #{'not' => parse(Schema)};
+parse(#{<<"oneOf">> := Schemas}) ->
+    #{one_of => lists:map(fun parse/1, Schemas)};
+parse(#{<<"anyOf">> := Schemas}) ->
+    #{any_of => lists:map(fun parse/1, Schemas)};
+parse(#{<<"allOf">> := Schemas}) ->
+    #{all_of => lists:map(fun parse/1, Schemas)};
 parse(_Schema) ->
     undefined_type.
 
@@ -80,7 +92,7 @@ parse_number(Schema) ->
     NewSchema = build_schema(NumberKeys, Schema),
     IntegerSchema = put_only_if_exists(multiple_of, NewSchema, <<"multipleOf">>, Schema),
     #{
-        anyOf => [
+        any_of => [
             maps:put(type, integer, IntegerSchema),
             maps:put(type, float, NewSchema)
         ]
@@ -96,8 +108,10 @@ parse_array(Schema) ->
     case maps:get(<<"items">>, Schema, undefined) of
         undefined ->
             NewSchema;
-        Items ->
-            maps:put(items, parse(Items), NewSchema)
+        #{<<"type">> := Type} ->
+            maps:put(items, #{type => binary_to_atom(Type)}, NewSchema);
+        Items when is_list(Items)->
+            maps:put(items, lists:map(fun parse/1, Items), NewSchema)
     end.
 
 build_schema(Keys, Schema) ->
@@ -142,7 +156,7 @@ parse_subschemas(NewKey, NewMap, OldKey, OldMap) ->
     end.
 
 parse_keywords_for_applying_subschemas(NewMap, Schema) ->
-    Keywords = ['if', then, else, allOf, anyOf, oneOf, 'not'],
+    Keywords = ['if', then, else, all_of, any_of, one_of, 'not'],
     lists:foldl(
         fun(Keyword, Acc) -> 
             parse_subschemas(Keyword, Acc, list_to_binary(snake_case_to_camel_case(atom_to_list(Keyword))), Schema)
