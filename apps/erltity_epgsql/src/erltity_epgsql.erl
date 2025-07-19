@@ -263,16 +263,28 @@ create_table_properties([{PropertyName, Value}], Requiered, Acc) ->
     Query = parse_property(PropertyName, Value, Requiered) ++ "\n);\n",
     string:concat(Acc, Query);
 create_table_properties([{PropertyName, Value} | T], Requiered, Acc) ->
-    Query = parse_property(PropertyName, Value, Requiered) ++ ",\n\t",
-    create_table_properties(T, Requiered, string:concat(Acc, Query)).
+    case parse_property(PropertyName, Value, Requiered) of
+        {PrevQuery, Query} ->
+             create_table_properties(T, Requiered, string:concat(string:concat(PrevQuery ++ "\n", Acc), Query ++ ",\n\t"));
+        Query ->
+            create_table_properties(T, Requiered, string:concat(Acc, Query ++ ",\n\t"))
+    end.
+
 
 parse_property(PropertyName, Value, Requiered) ->
-    Type = parse_type(maps:get(type, Value), Value),
-    case lists:member(PropertyName, Requiered) of
-        true ->
-            binary_to_list(PropertyName) ++ " " ++ Type ++ " NOT NULL";
-        false ->
-            binary_to_list(PropertyName) ++ " " ++ Type ++ " NULL"
+    case maps:get(enum, Value, undefined) of
+        undefined ->
+            Type = parse_type(maps:get(type, Value), Value),
+            case lists:member(PropertyName, Requiered) of
+                true ->
+                    binary_to_list(PropertyName) ++ " " ++ Type ++ " NOT NULL";
+                false ->
+                    binary_to_list(PropertyName) ++ " " ++ Type ++ " NULL"
+            end;
+        Enum ->
+            CreateEnumQuery = "CREATE TYPE " ++ binary_to_list(PropertyName) ++ "_enum AS ENUM (" ++
+                lists:join(", ", lists:map(fun(V) -> "'" ++ to_list(V) ++ "'" end, Enum)) ++ ");\n",
+            {CreateEnumQuery, binary_to_list(PropertyName) ++ " " ++ binary_to_list(PropertyName) ++ "_enum NOT NULL"}
     end.
 
 parse_type(integer, _Value) ->
@@ -292,12 +304,19 @@ parse_type(array, Value) -> %% TO DO: Handle prefixItems, additional_items, uniq
             {error, array_items_not_defined};
         false ->
             "";
-        Items ->
+        Items when is_map(Items) ->
             case maps:get(type, Items, undefined) of
                 undefined ->
                     {error, array_items_type_not_defined};
                 Type ->
                     parse_type(Type, Items) ++ "[]"
+            end;
+        Items when is_list(Items) ->
+            case lists:all(fun is_map/1, Items) of
+                true ->
+                    "JSONB[]"; %% TO DO: Handle array of objects
+                false ->
+                    {error, array_items_type_not_defined}
             end
     end.
 
