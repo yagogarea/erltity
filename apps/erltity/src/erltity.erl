@@ -118,14 +118,16 @@ register(SchemaPath, Opts) ->
     {SchemaName, Schema} = erltity_parser:parse(SchemaPath),
     DbDriverModule = persistent_term:get(db_driver_module),
     DbDriverModule:register(SchemaName, Schema, Opts),
-    Forms = erltity_generator:generate(DbDriverModule, SchemaName),
+    Forms = erltity_generator:generate(DbDriverModule, Schema, SchemaName),
     load(Forms),
     case maps:get(save_module, Opts, undefined) of
         undefined ->
             ok;
         Path ->
             {ok, File} = file:open(binary_to_list(Path) ++ atom_to_list(SchemaName) ++ ".erl", [write]),
-            io:format(File, "~s", [erl_prettypr:format(erl_syntax:form_list(Forms))])
+            io:format(File, "~s~n", [
+                erl_prettypr:format(erl_syntax:form_list(Forms), [{paper, 120}])
+            ])
     end.
 
 -spec create(EntityName, CreateRequest) -> Result when
